@@ -160,11 +160,9 @@ POST http://localhost:5678/webhook/chat
 
 # Screenshots
 
-Adicionar imagens em:
 
-```text id="9h07f7"
-frontend/screenshots/
-```
+<img width="1363" height="640" alt="image" src="https://github.com/user-attachments/assets/44aaca71-ec26-485f-9085-bf98a8299da9" />
+
 
 ---
 
