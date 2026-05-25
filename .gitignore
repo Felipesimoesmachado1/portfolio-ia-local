@@ -1,0 +1,29 @@
+#Dependências
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Logs
+*.log
+
+# Docker volumes
+postgres/data/
+n8n/data/
+
+# Ambiente
+.env
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+
+# VSCode
+.vscode/
+
+# Uploads
+*.zip

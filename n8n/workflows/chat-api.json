@@ -1,0 +1,467 @@
+{
+  "name": "chat-api",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        0
+      ],
+      "id": "f13adbb7-d5c8-428b-b886-806c7cc25fc0",
+      "name": "Webhook-chat",
+      "webhookId": "0812043d-6177-4564-96ed-19150537a23a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/api/generate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "llama3.2:1b"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.mensagem }}"
+            },
+            {
+              "name": "stream",
+              "value": "={{ false }}"
+            },
+            {
+              "name": "temperature",
+              "value": "0.4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "7525b416-d207-4a5d-8b4a-465ee4cf93cf",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensagens",
+          "mode": "list",
+          "cachedResultName": "mensagens"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $json.body.telefone }}",
+            "mensagem": "={{ $json.body.mensagem }}",
+            "role": "user"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensagem",
+              "displayName": "mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resposta",
+              "displayName": "resposta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "conversa_id",
+              "displayName": "conversa_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "475abf9e-5057-4641-8181-58d37b624d3e",
+      "name": "save_user",
+      "credentials": {
+        "postgres": {
+          "id": "CX8IoqwOWE4T3fvw",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensagens",
+          "mode": "list",
+          "cachedResultName": "mensagens"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "telefone",
+              "value": "={{ $('Webhook-chat').item.json.body.telefone }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "a66041ed-9cb6-435c-8be2-c3178ff368b5",
+      "name": "get_history",
+      "credentials": {
+        "postgres": {
+          "id": "CX8IoqwOWE4T3fvw",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let sistema = `\nVocê é um assistente virtual inteligente, útil e educado.\n\nREGRAS IMPORTANTES:\n- Responda sempre em português do Brasil.\n- Seja natural e conversacional.\n- Seja curto e direto.\n- Nunca invente informações.\n- Nunca invente fórmulas matemáticas.\n- Nunca mude de assunto.\n- Nunca diga frases aleatórias.\n- Nunca repita saudações excessivamente.\n- Não finja emoções humanas.\n- Se não souber algo, diga claramente.\n- Explique de forma didática.\n- Responda no máximo em 5 linhas.\n`;\n\nconst historico = $input.all().slice(-6);\n\nlet conversa = \"\";\n\nfor (const item of historico) {\n\n  if (\n    item.json.mensagem &&\n    item.json.role\n  ) {\n\n    conversa += `${item.json.role}: ${item.json.mensagem}\\n`;\n  }\n}\n\nconst pergunta = $('Webhook-chat').first().json.body.mensagem;\n\nconst prompt = `\n${sistema}\n\nHistórico:\n${conversa}\n\nUsuário: ${pergunta}\n\nAssistente:\n`;\n\nreturn [\n  {\n    json: {\n      mensagem: prompt,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        0
+      ],
+      "id": "7731b388-456e-4b00-a2e5-9b2ed2d2aa5e",
+      "name": "code_context"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      reply: $json.response,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "id": "c826f252-59d9-4209-9467-c40939bb0c1f",
+      "name": "code_response"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensagens",
+          "mode": "list",
+          "cachedResultName": "mensagens"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Webhook-chat').first().json.body.telefone }}",
+            "mensagem": "={{ $json.reply }}",
+            "role": "assistant"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensagem",
+              "displayName": "mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resposta",
+              "displayName": "resposta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "conversa_id",
+              "displayName": "conversa_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        736,
+        0
+      ],
+      "id": "9f50033f-c629-44f1-aa83-f61fa4067e6a",
+      "name": "Insert_assistant",
+      "credentials": {
+        "postgres": {
+          "id": "CX8IoqwOWE4T3fvw",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"reply\": $json.reply } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        576,
+        0
+      ],
+      "id": "9c420326-6b74-4acf-9c8b-a524eb4f0511",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook-chat": {
+      "main": [
+        [
+          {
+            "node": "save_user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "code_response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_user": {
+      "main": [
+        [
+          {
+            "node": "get_history",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_history": {
+      "main": [
+        [
+          {
+            "node": "code_context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_context": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert_assistant": {
+      "main": [
+        []
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Insert_assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7c402f89-0549-4452-a2d7-d863dc010b9a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "354db0121b0d47e1ab0e2b4927943a58e68e08f476b17b998578bec8a392ebb8"
+  },
+  "id": "r6ti9WVNH2s8YE3d",
+  "tags": []
+}
